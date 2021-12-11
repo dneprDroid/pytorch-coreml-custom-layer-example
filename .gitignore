@@ -6,7 +6,7 @@ Carthage/
 
 .DS_Store
 
-xcuserdata
+*.xcbkptlist
 *.xccheckout
 *.moved-aside
 DerivedData
