@@ -13,10 +13,10 @@ python3 convert.py -o /path/to/output/resulting/mlmodel/file
 
  ```
 
-## Run a demo app
+## Run the demo app
 Open `TorchCoreMLDemo.xcodeproj` in Xcode, build and run the app.
 
 ## Shader 
-The code of the grid sample Metal shader is [here](./TorchCoreMLDemo/TorchCoreMLDemo/Metal/GridSample.metal).
+The code of the grid sample Metal-shader is [here](./TorchCoreMLDemo/TorchCoreMLDemo/Metal/GridSample.metal).
 
 More information about grid sample (warper) algorithm you can find [here](https://pytorch.org/docs/stable/generated/torch.nn.functional.grid_sample.html).
