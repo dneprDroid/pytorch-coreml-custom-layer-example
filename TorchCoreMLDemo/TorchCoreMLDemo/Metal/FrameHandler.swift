@@ -80,7 +80,7 @@ private extension FrameHandler {
     
     final class Input: MLFeatureProvider {
         
-        var featureNames: Set<String> = ["input", "warp_grid"]
+        var featureNames: Set<String> = ["image_input", "warp_grid"]
         
         private let input: CGImage
         private let grid: MLMultiArray
@@ -95,7 +95,7 @@ private extension FrameHandler {
         }
         
         func featureValue(for featureName: String) -> MLFeatureValue? {
-            if featureName == "input" {
+            if featureName == "image_input" {
                 let value = try? MLFeatureValue(
                     cgImage: input,
                     pixelsWide: Constants.wh,

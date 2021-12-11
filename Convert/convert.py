@@ -137,7 +137,7 @@ def convert(output_path):
     mlmodel = coremltools.convert(
         traced_model,
         inputs=[
-            coremltools.ImageType(name="input", shape=example_input.shape), 
+            coremltools.ImageType(name="image_input", shape=example_input.shape), 
             coremltools.TensorType(name="warp_grid", shape=example_grid.shape)
         ],
         minimum_deployment_target=coremltools.target["iOS13"]
