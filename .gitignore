@@ -1,0 +1,17 @@
+# User data
+xcshareddata/
+
+# Carthage
+Carthage/
+
+.DS_Store
+
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+*.DS_Store
+*.pyc
