@@ -163,7 +163,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-o', '--output', 
-        default='./TorchCoreMLDemo/TorchCoreMLDemo/model.pb', 
+        default='./TorchCoreMLDemo/TorchCoreMLDemo/Assets/model.pb', 
         help='Output file'
     )
     args = parser.parse_args()
