@@ -12,6 +12,10 @@ static inline float compute_source_index(const float coord, const int size) {
     return new_coord;
 }
 
+static inline bool is_safe_index(const int x, const int y, const int w, const int h) {
+  return x >= 0 && x < w && y >= 0 && y < h;
+}
+
 kernel void grid_sampler(texture2d_array<half, access::sample> in [[texture(0)]],
                          texture2d_array<half, access::sample> grid [[texture(1)]],
                          texture2d_array<half, access::write>  out [[texture(2)]],
@@ -56,10 +60,17 @@ kernel void grid_sampler(texture2d_array<half, access::sample> in [[texture(0)]]
 
     float4 result = float4(0, 0, 0, 1);
     
-    result += float4(in.sample(sample, float2(ix_nw, iy_nw), n)) * nw;
-    result += float4(in.sample(sample, float2(ix_ne, iy_ne), n)) * ne;
-    result += float4(in.sample(sample, float2(ix_sw, iy_sw), n)) * sw;
-    result += float4(in.sample(sample, float2(ix_se, iy_se), n)) * se;
-
+    if (is_safe_index(ix_nw, iy_nw, inp_W, inp_H)) {
+        result += float4(in.sample(sample, float2(ix_nw, iy_nw), n)) * nw;
+    }
+    if (is_safe_index(ix_ne, iy_ne, inp_W, inp_H)) {
+        result += float4(in.sample(sample, float2(ix_ne, iy_ne), n)) * ne;
+    }
+    if (is_safe_index(ix_sw, iy_sw, inp_W, inp_H)) {
+        result += float4(in.sample(sample, float2(ix_sw, iy_sw), n)) * sw;
+    }
+    if (is_safe_index(ix_se, iy_se, inp_W, inp_H)) {
+        result += float4(in.sample(sample, float2(ix_se, iy_se), n)) * se;
+    }
     out.write(half4(result), ushort2(w, h), n);
 }
