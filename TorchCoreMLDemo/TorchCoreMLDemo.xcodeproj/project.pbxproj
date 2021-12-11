@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -51,6 +51,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE580E552764A7120098A406 /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				CEEEB74C2762A197009F04BC /* model.pb */,
+				CEEEB74E2762A19F009F04BC /* grid.json */,
+			);
+			path = Assets;
+			sourceTree = "<group>";
+		};
 		CE6D32F5276154040001DE29 = {
 			isa = PBXGroup;
 			children = (
@@ -70,11 +79,10 @@
 		CE6D3300276154040001DE29 /* TorchCoreMLDemo */ = {
 			isa = PBXGroup;
 			children = (
+				CE580E552764A7120098A406 /* Assets */,
 				CEA735AB2763E10B00D95BFF /* Util */,
 				CE6D3315276154530001DE29 /* Metal */,
 				CE6D3301276154040001DE29 /* AppDelegate.swift */,
-				CEEEB74C2762A197009F04BC /* model.pb */,
-				CEEEB74E2762A19F009F04BC /* grid.json */,
 				CE6D3305276154040001DE29 /* ViewController.swift */,
 				CEEEB74827628011009F04BC /* VideoCapturer.swift */,
 				CE6D3307276154040001DE29 /* Main.storyboard */,
@@ -140,7 +148,7 @@
 				};
 			};
 			buildConfigurationList = CE6D32F9276154040001DE29 /* Build configuration list for PBXProject "TorchCoreMLDemo" */;
-			compatibilityVersion = "Xcode 13.0";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
