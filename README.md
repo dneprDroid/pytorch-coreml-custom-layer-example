@@ -3,7 +3,7 @@ PyTorch to CoreML: Writing custom layers with Metal
 
 <image src="./Images/coreml-gif.gif" height=500>
 
-## Convert a sample PyTorch model
+## Convert PyTorch model
 
 ```bash
 
