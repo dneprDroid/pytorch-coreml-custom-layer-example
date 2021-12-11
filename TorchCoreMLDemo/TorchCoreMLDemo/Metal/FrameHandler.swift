@@ -28,14 +28,11 @@ final class FrameHandler {
     ) {
         queue.async {
             do {
-                
-                
                 let compiledUrl = try MLModel.compileModel(at: modelUrl)
                 let config = MLModelConfiguration()
                 config.computeUnits = .all
                 self.model = try MLModel(contentsOf: compiledUrl, configuration: config)
                 try? FileManager.default.removeItem(at: compiledUrl)
-                
                 
                 self.grid = MLMultiArray.array4d(fromJson: gridUrl)
             } catch {
