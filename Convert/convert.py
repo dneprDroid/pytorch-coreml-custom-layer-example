@@ -89,3 +89,79 @@ def torch_grid_sample(context, node):
         name=node.name
     )
     context.add(res)
+
+
+########################################################################
+######################## Test ml model #################################
+########################################################################
+
+IN_WH = 512
+GRID_WH = 256
+
+class TestModel(nn.Module):
+
+    def forward(self, x, grid):
+        grid_resized = self.resize_grid(grid)
+        return F.grid_sample(
+            x, grid_resized
+        )
+
+    def resize_grid(self, grid):
+        # [1, GRID_WH, GRID_WH, 2] => [1, 2, GRID_WH, GRID_WH]
+        grid_resized = grid.permute(0, 3, 1, 2)
+        # [1, 2, GRID_WH, GRID_WH] => [1, 2, IN_WH, IN_WH]
+        grid_resized = F.interpolate(
+            grid_resized, 
+            size=(IN_WH, IN_WH), 
+            mode='nearest'
+        )
+        # [1, 2, IN_WH, IN_WH] => [1, IN_WH, IN_WH, 2]
+        grid_resized = grid_resized.permute(0, 2, 3, 1)
+        return grid_resized
+
+########################################################################
+########################################################################
+
+def convert(output_path):
+    torch_model = TestModel()
+    example_input = torch.rand(1, 3, IN_WH, IN_WH) 
+    example_grid = torch.rand(1, GRID_WH, GRID_WH, 2) 
+    traced_model = torch.jit.trace(torch_model, (example_input, example_grid))
+
+    mlmodel = coremltools.convert(
+        traced_model,
+        inputs=[
+            coremltools.ImageType(name="input", shape=example_input.shape), 
+            coremltools.TensorType(name="warp_grid", shape=example_grid.shape)
+        ],
+        minimum_deployment_target=coremltools.target["iOS13"]
+    )
+    mlmodel_path = output_path + ".mlmodel"
+    mlmodel.save(mlmodel_path)
+
+    spec = coremltools.utils.load_spec(mlmodel_path)
+
+    output_layer = spec.description.output[0]
+    output_layer.type.imageType.colorSpace = ft.ImageFeatureType.RGB
+    output_layer.type.imageType.height, output_layer.type.imageType.width = IN_WH, IN_WH
+    coremltools.utils.rename_feature(spec, output_layer.name, 'output')
+
+    coremltools.utils.save_spec(spec, mlmodel_path)
+
+    shutil.copyfile(mlmodel_path, output_path)
+
+    print(f"Saved to {output_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-o', '--output', 
+        default='./TorchCoreMLDemo/TorchCoreMLDemo/model.pb', 
+        help='Output file'
+    )
+    args = parser.parse_args()
+    convert(args.output)
+
+if __name__ == "__main__":
+    main()
