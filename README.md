@@ -1,7 +1,7 @@
 # pytorch-coreml-custom-layer-example
 PyTorch to CoreML: Writing custom layers with Metal
 
-<image src="./Images/coreml-gif.gif" height=500>
+<img width="200" alt="pytorch-demo-image" src="https://user-images.githubusercontent.com/13742733/176658252-533cdf6f-a993-4c1c-9393-2a926398f653.png">
 
 ## Convert PyTorch model
 
