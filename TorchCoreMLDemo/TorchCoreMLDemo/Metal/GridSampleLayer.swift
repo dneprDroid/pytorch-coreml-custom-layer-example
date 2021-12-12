@@ -1,6 +1,7 @@
 import Foundation
 import CoreML
 
+// will be loaded by CoreML engine, don't change class name 
 @objc(GridSampleLayer)
 final class GridSampleLayer: NSObject, MLCustomLayer {
     
