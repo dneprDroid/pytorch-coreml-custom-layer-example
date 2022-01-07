@@ -10,7 +10,7 @@ COREMLTOOLS_SUPPORTED_VERSION = '4.1'
 
 assert coremltools.__version__ == COREMLTOOLS_SUPPORTED_VERSION, \
        f"Please install coremltools version {COREMLTOOLS_SUPPORTED_VERSION}: " + \
-       f"`python3 -m pip uninstall coremltools && python3 -m pip install coremltools==={COREMLTOOLS_SUPPORTED_VERSION}`\n" + \
+       f"`python3 -m pip uninstall coremltools && python3 -m pip install coremltools=={COREMLTOOLS_SUPPORTED_VERSION}`\n" + \
        f"current version: {coremltools.__version__}"
 
 from coremltools.converters.mil.mil import Builder as mb
