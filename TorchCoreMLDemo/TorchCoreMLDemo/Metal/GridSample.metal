@@ -34,9 +34,13 @@ kernel void grid_sampler(texture2d_array<half, access::sample> in [[texture(0)]]
     const int h = gid.y;
     const int n = gid.z;
     
-    const float4 grid_XY = float4(grid.sample(sample, float2(w, h), n));
-    const float x = grid_XY[0];
-    const float y = grid_XY[1];
+    const float ratio = in.get_height() / grid.get_array_size();
+    // grid: height x 2 x width = 128 x 2 x 512
+    const float4 grid_X = float4(grid.sample(sample, float2(0, w), h / ratio));
+    const float4 grid_Y = float4(grid.sample(sample, float2(1, w), h / ratio));
+    
+    const float x = grid_X[0];
+    const float y = grid_Y[0];
 
     const float ix = compute_source_index(x, inp_W);
     const float iy = compute_source_index(y, inp_H);

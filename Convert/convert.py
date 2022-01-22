@@ -38,21 +38,10 @@ def grid_sample(const_context, builder, op):
     grid_name = make_input(const_context, builder, op.grid)
     out_name = op.outputs[0].name
 
-    suffix = "_prepared"
-    input_names1 = [grid_name]
-    out_names1 = [out_name + suffix]
+    input_names = [image_name, grid_name]
+    out_names = [out_name]
 
-    input_names2 = [image_name, out_names1[0]]
-    out_names2 = [out_name]
-
-    # transpose the grid to [n, 2, w, h] shape (for encoding it to a coreml 2-channel texture)
-    builder.add_transpose(
-        name=op.name + suffix,
-        axes=(0, 3, 1, 2),
-        input_name=input_names1[0],
-        output_name=out_names1[0],
-    )
-    spec_layer = builder._add_generic_layer(op.name, input_names2, out_names2)
+    spec_layer = builder._add_generic_layer(op.name, input_names, out_names)
 
     spec_layer_params = spec_layer.custom
     spec_layer_params.className = "GridSampleLayer"
