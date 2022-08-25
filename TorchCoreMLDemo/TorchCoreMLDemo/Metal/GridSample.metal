@@ -27,50 +27,13 @@ kernel void grid_sampler(texture2d_array<half, access::sample> in [[texture(0)]]
     }
     constexpr sampler sample(coord::pixel, filter::nearest, address::clamp_to_zero);
 
-    const int inp_H = in.get_height();
     const int inp_W = in.get_width();
     
     const int w = gid.x;
     const int h = gid.y;
     const int n = gid.z;
     
-    const float4 grid_XY = float4(grid.sample(sample, float2(w, h), n));
-    const float x = grid_XY[0];
-    const float y = grid_XY[1];
-
-    const float ix = compute_source_index(x, inp_W);
-    const float iy = compute_source_index(y, inp_H);
+    const half4 result = in.sample(sample, float2(inp_W - w, h), n);
     
-    const int ix_nw = int(floor(ix));
-    const int iy_nw = int(floor(iy));
-
-    const int ix_ne = ix_nw + 1;
-    const int iy_ne = iy_nw;
-
-    const int ix_sw = ix_nw;
-    const int iy_sw = iy_nw + 1;
-
-    const int ix_se = ix_nw + 1;
-    const int iy_se = iy_nw + 1;
-
-    const float nw = (ix_se - ix)    * (iy_se - iy);
-    const float ne = (ix    - ix_sw) * (iy_sw - iy);
-    const float sw = (ix_ne - ix)    * (iy    - iy_ne);
-    const float se = (ix    - ix_nw) * (iy    - iy_nw);
-
-    float4 result = float4(0, 0, 0, 1);
-    
-    if (is_safe_index(ix_nw, iy_nw, inp_W, inp_H)) {
-        result += float4(in.sample(sample, float2(ix_nw, iy_nw), n)) * nw;
-    }
-    if (is_safe_index(ix_ne, iy_ne, inp_W, inp_H)) {
-        result += float4(in.sample(sample, float2(ix_ne, iy_ne), n)) * ne;
-    }
-    if (is_safe_index(ix_sw, iy_sw, inp_W, inp_H)) {
-        result += float4(in.sample(sample, float2(ix_sw, iy_sw), n)) * sw;
-    }
-    if (is_safe_index(ix_se, iy_se, inp_W, inp_H)) {
-        result += float4(in.sample(sample, float2(ix_se, iy_se), n)) * se;
-    }
-    out.write(half4(result), ushort2(w, h), n);
+    out.write(result, ushort2(w, h), n);
 }
