@@ -1,3 +1,4 @@
+import os
 import argparse
 import shutil
 
@@ -6,70 +7,42 @@ import torch.nn as nn
 import torch.nn.functional as F
 import coremltools
 
-COREMLTOOLS_SUPPORTED_VERSION = '4.1'
-
-assert coremltools.__version__ == COREMLTOOLS_SUPPORTED_VERSION, \
-       f"Please install coremltools version {COREMLTOOLS_SUPPORTED_VERSION}: " + \
-       f"`python3 -m pip uninstall coremltools && python3 -m pip install coremltools==={COREMLTOOLS_SUPPORTED_VERSION}`\n" + \
-       f"current version: {coremltools.__version__}"
-
-from coremltools.converters.mil.mil import Builder as mb
 import coremltools.proto.FeatureTypes_pb2 as ft
-from coremltools.converters.mil.mil.ops.defs._op_reqs import (
-    register_op, Operation, InputSpec, TensorInputType, IntInputType, BoolInputType,
-    types
-)
+from coremltools.converters.mil.mil import Builder as mb
 from coremltools.converters.mil.frontend.torch.ops import (
     _get_inputs as mil_get_inputs
-)
-from coremltools.converters.mil.backend.nn.op_mapping import (
-    make_input
 )
 from coremltools.converters.mil import (
     register_torch_op
 )
-from coremltools.converters.mil.backend.nn.mil_to_nn_mapping_registry import (
-    register_mil_to_nn_mapping
+from coremltools.converters.mil.mil.ops.defs._op_reqs import register_op
+from coremltools.converters.mil.mil import (
+    Operation,
+    types
 )
-
-@register_mil_to_nn_mapping(override=True)
-def grid_sample(const_context, builder, op):
-    image_name = make_input(const_context, builder, op.input)
-    grid_name = make_input(const_context, builder, op.grid)
-    out_name = op.outputs[0].name
-
-    suffix = "_prepared"
-    input_names1 = [grid_name]
-    out_names1 = [out_name + suffix]
-
-    input_names2 = [image_name, out_names1[0]]
-    out_names2 = [out_name]
-
-    # transpose the grid to [n, 2, w, h] shape (for encoding it to a coreml 2-channel texture)
-    builder.add_transpose(
-        name=op.name + suffix,
-        axes=(0, 3, 1, 2),
-        input_name=input_names1[0],
-        output_name=out_names1[0],
-    )
-    spec_layer = builder._add_generic_layer(op.name, input_names2, out_names2)
-
-    spec_layer_params = spec_layer.custom
-    spec_layer_params.className = "GridSampleLayer"
+from coremltools.converters.mil.mil.input_type import (
+    InputSpec,
+    TensorInputType,
+)
     
-@register_op(doc_str="")
+@register_op(is_custom_op=True)
 class grid_sample(Operation):
     
     input_spec = InputSpec(
-        input=TensorInputType(),
-        grid=TensorInputType(),
-        mode=IntInputType(const=True),
-        padding_mode=IntInputType(const=True),
-        align_corners=BoolInputType(const=True),
+        input=TensorInputType(type_domain="T"),
+        grid=TensorInputType(type_domain="T"),
+
+        mode=TensorInputType(const=True, type_domain=types.int32),
+        padding_mode=TensorInputType(const=True, type_domain=types.int32),
+        align_corners=TensorInputType(const=True, type_domain=types.bool),
     )
 
+    type_domains = {
+        "T": (types.fp32,),
+    }
+
     bindings = {
-        "class_name": "grid_sample",
+        "class_name": "GridSampleLayer",
         "input_order": ["input", "grid"],
         "parameters": ["mode", "padding_mode", "align_corners"],
         "description": "PyTorch grid_sample",
@@ -86,9 +59,16 @@ class grid_sample(Operation):
 @register_torch_op(torch_alias=["grid_sampler"], override=True)
 def torch_grid_sample(context, node):
     inputs = mil_get_inputs(context, node, expected=5)
+
+    grid = inputs[1] 
+    grid_transposed = mb.transpose(
+        x=grid,
+        perm=[0, 3, 1, 2],
+        name=node.name + "__grid_transposed"
+    )
     res = mb.grid_sample(
         input=inputs[0], 
-        grid=inputs[1], 
+        grid=grid_transposed, 
         mode=inputs[2], 
         padding_mode=inputs[3], 
         align_corners=inputs[4],
@@ -140,6 +120,7 @@ def convert(output_path):
             coremltools.ImageType(name="image_input", shape=example_input.shape), 
             coremltools.TensorType(name="warp_grid", shape=example_grid.shape)
         ],
+        convert_to="neuralnetwork",
         minimum_deployment_target=coremltools.target["iOS13"]
     )
     mlmodel_path = output_path + ".mlmodel"
@@ -160,10 +141,13 @@ def convert(output_path):
 
 
 def main():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    default_out_path = os.path.join(current_dir, '../TorchCoreMLDemo/TorchCoreMLDemo/Assets/model.pb')
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-o', '--output', 
-        default='./TorchCoreMLDemo/TorchCoreMLDemo/Assets/model.pb', 
+        default=default_out_path, 
         help='Output file'
     )
     args = parser.parse_args()

@@ -1,2 +1,2 @@
 torch>=1.6.0
-coremltools==4.1
+coremltools>=4.1
